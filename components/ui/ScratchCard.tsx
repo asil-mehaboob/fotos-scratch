@@ -56,12 +56,12 @@ export function ScratchCard({ onComplete, width = 320, height = 200 }: ScratchCa
       ctx.stroke();
     }
 
-    // Center text
+    // Center label
     ctx.fillStyle = "rgba(120, 80, 0, 0.55)";
-    ctx.font = `bold 13px Manrope, system-ui, sans-serif`;
+    ctx.font = `600 13px Manrope, system-ui, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("✦  Scratch here  ✦", width / 2, height / 2);
+    ctx.fillText("Scratch to reveal", width / 2, height / 2);
 
     // ── Scratch helpers ──────────────────────────────────────
     const getCanvasPos = (e: MouseEvent | Touch) => {
