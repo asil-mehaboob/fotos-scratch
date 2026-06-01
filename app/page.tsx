@@ -6,17 +6,15 @@ import { OtpStep } from "@/components/steps/OtpStep";
 import { SuccessStep } from "@/components/steps/SuccessStep";
 import { ScratchStep } from "@/components/steps/ScratchStep";
 import { RevealStep } from "@/components/steps/RevealStep";
+import { SplashStep } from "@/components/steps/SplashStep";
 import { Confetti } from "@/components/Confetti";
 import { getPrizeById, type Prize } from "@/lib/prizes";
 
-type Step = "form" | "otp" | "success" | "scratch" | "reveal";
-
-const CARD =
-  "bg-white rounded-2xl p-8 shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] w-full max-w-sm";
+type Step = "splash" | "form" | "otp" | "success" | "scratch" | "reveal";
 
 export default function Home() {
   // Navigation
-  const [step, setStep] = useState<Step>("form");
+  const [step, setStep] = useState<Step>("splash");
   const [animKey, setAnimKey] = useState(0);
 
   // Form
@@ -24,6 +22,7 @@ export default function Home() {
   const [email, setEmail] = useState("");
   const [countryDial, setCountryDial] = useState("+91");
   const [phoneLocal, setPhoneLocal] = useState("");
+  const [isAkmpMember, setIsAkmpMember] = useState(false);
 
   // OTP
   const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(""));
@@ -119,6 +118,7 @@ export default function Home() {
     setPhoneLocal("");
     setCountryDial("+91");
     setOtpDigits(Array(6).fill(""));
+    setIsAkmpMember(false);
     setPrize(null);
     setError("");
     goTo("form");
@@ -138,70 +138,80 @@ export default function Home() {
   }, [resendCooldown]);
 
   // ── Render ─────────────────────────────────────────────────
+  if (step === "splash") {
+    return <SplashStep onNext={() => goTo("form")} />;
+  }
+
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{
-        background:
-          "radial-gradient(ellipse 80% 60% at 50% 30%, rgba(250,79,0,0.04) 0%, #ffffff 70%)",
-      }}
-    >
+    <div className="min-h-screen flex items-center justify-center bg-[#fdfcfb] relative overflow-hidden">
+      {/* Subtle warm glow — matches splash */}
+      <div
+        className="absolute top-0 left-0 right-0 h-80 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse 90% 70% at 50% 0%, rgba(250,79,0,0.07) 0%, transparent 80%)",
+        }}
+      />
       {step === "reveal" && <Confetti />}
 
-      <div className={CARD}>
-        {step === "form" && (
-          <FormStep
-            key={`form-${animKey}`}
-            name={name}
-            email={email}
-            countryDial={countryDial}
-            phoneLocal={phoneLocal}
-            isLoading={isLoading}
-            error={error}
-            onNameChange={setName}
-            onEmailChange={setEmail}
-            onCountryDialChange={setCountryDial}
-            onPhoneLocalChange={setPhoneLocal}
-            onSubmit={handleSendOtp}
-          />
-        )}
+      <div className="relative z-10 w-full min-h-screen flex items-center justify-center px-6 py-12">
+        <div className="w-full max-w-lg">
+          {step === "form" && (
+            <FormStep
+              key={`form-${animKey}`}
+              name={name}
+              email={email}
+              countryDial={countryDial}
+              phoneLocal={phoneLocal}
+              isAkmpMember={isAkmpMember}
+              isLoading={isLoading}
+              error={error}
+              onNameChange={setName}
+              onEmailChange={setEmail}
+              onCountryDialChange={setCountryDial}
+              onPhoneLocalChange={setPhoneLocal}
+              onAkmpMemberChange={setIsAkmpMember}
+              onSubmit={handleSendOtp}
+            />
+          )}
 
-        {step === "otp" && (
-          <OtpStep
-            key={`otp-${animKey}`}
-            countryDial={countryDial}
-            phoneLocal={phoneLocal}
-            otpDigits={otpDigits}
-            resendCooldown={resendCooldown}
-            isLoading={isLoading}
-            error={error}
-            onOtpChange={setOtpDigits}
-            onVerify={handleVerifyOtp}
-            onResend={handleResend}
-            onBack={() => goTo("form")}
-          />
-        )}
+          {step === "otp" && (
+            <OtpStep
+              key={`otp-${animKey}`}
+              countryDial={countryDial}
+              phoneLocal={phoneLocal}
+              otpDigits={otpDigits}
+              resendCooldown={resendCooldown}
+              isLoading={isLoading}
+              error={error}
+              onOtpChange={setOtpDigits}
+              onVerify={handleVerifyOtp}
+              onResend={handleResend}
+              onBack={() => goTo("form")}
+            />
+          )}
 
-        {step === "success" && (
-          <SuccessStep key={`success-${animKey}`} />
-        )}
+          {step === "success" && (
+            <SuccessStep key={`success-${animKey}`} />
+          )}
 
-        {step === "scratch" && prize && (
-          <ScratchStep
-            key={`scratch-${animKey}`}
-            prize={prize}
-            onComplete={handleScratchComplete}
-          />
-        )}
+          {step === "scratch" && prize && (
+            <ScratchStep
+              key={`scratch-${animKey}`}
+              prize={prize}
+              onComplete={handleScratchComplete}
+            />
+          )}
 
-        {step === "reveal" && prize && (
-          <RevealStep
-            key={`reveal-${animKey}`}
-            prize={prize}
-            name={name}
-            onReset={handleReset}
-          />
-        )}
+          {step === "reveal" && prize && (
+            <RevealStep
+              key={`reveal-${animKey}`}
+              prize={prize}
+              name={name}
+              onReset={handleReset}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

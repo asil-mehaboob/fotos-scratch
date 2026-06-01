@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, WarningCircle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/Button";
 import { OtpInput } from "@/components/ui/OtpInput";
@@ -18,6 +20,12 @@ interface OtpStepProps {
   onBack: () => void;
 }
 
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1], delay },
+});
+
 export function OtpStep({
   countryDial,
   phoneLocal,
@@ -31,56 +39,69 @@ export function OtpStep({
   onBack,
 }: OtpStepProps) {
   return (
-    <div className="animate-blurIn">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
+      {/* Logo */}
+      <motion.div className="flex justify-center mb-8" {...fadeUp(0)}>
+        <Image src="/logo.png" alt="fotos.studio" width={160} height={42} className="h-10 w-auto object-contain" />
+      </motion.div>
+
       {/* Back */}
-      <button
+      <motion.button
         onClick={onBack}
         className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-700 transition-colors mb-6"
+        {...fadeUp(0.05)}
+        whileHover={{ x: -3 }}
       >
         <ArrowLeft size={15} weight="bold" />
         Change number
-      </button>
+      </motion.button>
 
       {/* Header */}
-      <div className="text-center mb-7">
-        <span className="text-[10px] font-mono tracking-[0.15em] uppercase text-[#fa4f00]">
+      <motion.div className="text-center mb-10" {...fadeUp(0.1)}>
+        <span className="text-[11px] font-mono tracking-[0.18em] uppercase text-[#fa4f00]">
           Step 2 of 2
         </span>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-gray-900">
+        <h2 className="mt-3 text-4xl font-bold tracking-tight text-gray-900">
           Verify your number
         </h2>
-        <p className="mt-1.5 text-sm text-gray-500">
+        <p className="mt-2 text-base text-gray-500">
           OTP sent to{" "}
           <span className="font-medium text-gray-700">
             {countryDial} {phoneLocal}
           </span>
         </p>
-      </div>
+      </motion.div>
 
-      {/* OTP boxes */}
-      <OtpInput value={otpDigits} onChange={onOtpChange} />
+      <motion.div {...fadeUp(0.18)}>
+        <OtpInput value={otpDigits} onChange={onOtpChange} />
+      </motion.div>
 
       {error && (
-        <div className="flex items-center justify-center gap-2 text-sm text-red-500 mt-3 animate-fadeIn">
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-center gap-2 text-sm text-red-500 mt-3"
+        >
           <WarningCircle size={16} weight="fill" className="shrink-0" />
           {error}
-        </div>
+        </motion.div>
       )}
 
-      <Button fullWidth onClick={onVerify} disabled={isLoading} className="mt-6">
-        {isLoading ? (
-          <>
-            <Spinner /> Verifying…
-          </>
-        ) : (
-          <>
-            Verify &amp; Continue <ArrowRight size={16} weight="bold" />
-          </>
-        )}
-      </Button>
+      <motion.div className="mt-6" {...fadeUp(0.24)} whileTap={{ scale: 0.98 }}>
+        <Button fullWidth onClick={onVerify} disabled={isLoading}>
+          {isLoading ? (
+            <><Spinner /> Verifying…</>
+          ) : (
+            <>Verify &amp; Continue <ArrowRight size={16} weight="bold" /></>
+          )}
+        </Button>
+      </motion.div>
 
-      {/* Resend */}
-      <div className="text-center mt-4">
+      <motion.div className="text-center mt-4" {...fadeUp(0.3)}>
         {resendCooldown > 0 ? (
           <span className="text-sm text-gray-400">
             Resend OTP in{" "}
@@ -94,7 +115,7 @@ export function OtpStep({
             Resend OTP
           </button>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

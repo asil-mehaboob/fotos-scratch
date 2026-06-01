@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+import { motion } from "framer-motion";
 import { ArrowRight, WarningCircle } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -11,26 +13,36 @@ interface FormStepProps {
   email: string;
   countryDial: string;
   phoneLocal: string;
+  isAkmpMember: boolean;
   isLoading: boolean;
   error: string;
   onNameChange: (v: string) => void;
   onEmailChange: (v: string) => void;
   onCountryDialChange: (v: string) => void;
   onPhoneLocalChange: (v: string) => void;
+  onAkmpMemberChange: (v: boolean) => void;
   onSubmit: () => void;
 }
+
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1], delay },
+});
 
 export function FormStep({
   name,
   email,
   countryDial,
   phoneLocal,
+  isAkmpMember,
   isLoading,
   error,
   onNameChange,
   onEmailChange,
   onCountryDialChange,
   onPhoneLocalChange,
+  onAkmpMemberChange,
   onSubmit,
 }: FormStepProps) {
   const handleKey = (e: React.KeyboardEvent) => {
@@ -38,22 +50,31 @@ export function FormStep({
   };
 
   return (
-    <div className="animate-blurIn">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4 }}
+    >
+      {/* Logo */}
+      <motion.div className="flex justify-center mb-8" {...fadeUp(0)}>
+        <Image src="/logo.png" alt="fotos.studio" width={160} height={42} className="h-10 w-auto object-contain" />
+      </motion.div>
+
       {/* Header */}
-      <div className="text-center mb-7">
-        <span className="text-[10px] font-mono tracking-[0.15em] uppercase text-[#fa4f00]">
+      <motion.div className="text-center mb-10" {...fadeUp(0.08)}>
+        <span className="text-[11px] font-mono tracking-[0.18em] uppercase text-[#fa4f00]">
           Exclusive Offer
         </span>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight text-gray-900">
+        <h1 className="mt-3 text-4xl font-bold tracking-tight text-gray-900">
           Scratch &amp; Win
         </h1>
-        <p className="mt-1.5 text-sm text-gray-500">
+        <p className="mt-2 text-base text-gray-500">
           Enter your details to reveal your prize
         </p>
-      </div>
+      </motion.div>
 
       {/* Fields */}
-      <div className="space-y-4">
+      <motion.div className="space-y-5" {...fadeUp(0.16)}>
         <Input
           label="Full Name"
           type="text"
@@ -93,25 +114,63 @@ export function FormStep({
           </div>
         </div>
 
+        {/* AKMP member checkbox */}
+        <button
+          type="button"
+          onClick={() => onAkmpMemberChange(!isAkmpMember)}
+          className="flex items-center gap-3 group"
+        >
+          <motion.div
+            className="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors duration-150"
+            animate={{
+              borderColor: isAkmpMember ? "#fa4f00" : "#d1d5db",
+              backgroundColor: isAkmpMember ? "#fa4f00" : "#ffffff",
+            }}
+            transition={{ duration: 0.15 }}
+          >
+            {isAkmpMember && (
+              <motion.svg
+                width="11" height="9" viewBox="0 0 11 9" fill="none"
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.15 }}
+              >
+                <polyline
+                  points="1,4.5 4,7.5 10,1"
+                  stroke="white"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </motion.svg>
+            )}
+          </motion.div>
+          <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors select-none">
+            I am an <span className="font-medium">AKMP member</span>
+          </span>
+        </button>
+
         {error && (
-          <div className="flex items-center gap-2 text-sm text-red-500 animate-fadeIn">
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex items-center gap-2 text-sm text-red-500"
+          >
             <WarningCircle size={16} weight="fill" className="shrink-0" />
             {error}
-          </div>
+          </motion.div>
         )}
 
-        <Button fullWidth onClick={onSubmit} disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <Spinner /> Sending OTP…
-            </>
-          ) : (
-            <>
-              Send OTP <ArrowRight size={16} weight="bold" />
-            </>
-          )}
-        </Button>
-      </div>
-    </div>
+        <motion.div whileTap={{ scale: 0.98 }}>
+          <Button fullWidth onClick={onSubmit} disabled={isLoading}>
+            {isLoading ? (
+              <><Spinner /> Sending OTP…</>
+            ) : (
+              <>Send OTP <ArrowRight size={16} weight="bold" /></>
+            )}
+          </Button>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -1,8 +1,15 @@
 "use client";
 
+import { motion } from "framer-motion";
+
 export function SuccessStep() {
   return (
-    <div className="animate-slideUp text-center py-4">
+    <motion.div
+      className="text-center py-4"
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+    >
       {/* Animated SVG checkmark */}
       <div className="mx-auto w-24 h-24">
         <svg viewBox="0 0 80 80" fill="none" className="w-full h-full">
@@ -27,23 +34,29 @@ export function SuccessStep() {
         </svg>
       </div>
 
-      <h2
-        className="mt-5 text-2xl font-semibold tracking-tight text-gray-900 animate-fadeIn"
-        style={{ animationDelay: "0.9s", opacity: 0, animationFillMode: "both" }}
+      <motion.h2
+        className="mt-6 text-4xl font-bold tracking-tight text-gray-900"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.9 }}
       >
         You&apos;re in!
-      </h2>
-      <p
-        className="mt-2 text-sm text-gray-500 animate-fadeIn"
-        style={{ animationDelay: "1.1s", opacity: 0, animationFillMode: "both" }}
+      </motion.h2>
+
+      <motion.p
+        className="mt-2 text-sm text-gray-500"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 1.1 }}
       >
         Get ready to scratch your card…
-      </p>
+      </motion.p>
 
-      {/* Pulsing dots */}
-      <div
-        className="flex justify-center gap-1.5 mt-8 animate-fadeIn"
-        style={{ animationDelay: "1.3s", opacity: 0, animationFillMode: "both" }}
+      <motion.div
+        className="flex justify-center gap-1.5 mt-8"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1.3, duration: 0.4 }}
       >
         {[0, 1, 2].map((i) => (
           <div
@@ -52,7 +65,7 @@ export function SuccessStep() {
             style={{ animation: `pulse 1.2s ease ${i * 0.2}s infinite` }}
           />
         ))}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
