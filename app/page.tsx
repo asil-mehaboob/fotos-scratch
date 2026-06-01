@@ -7,7 +7,7 @@ import { SuccessStep } from "@/components/steps/SuccessStep";
 import { ScratchStep } from "@/components/steps/ScratchStep";
 import { RevealStep } from "@/components/steps/RevealStep";
 import { Confetti } from "@/components/Confetti";
-import { pickPrize, type Prize } from "@/lib/prizes";
+import { getPrizeById, type Prize } from "@/lib/prizes";
 
 type Step = "form" | "otp" | "success" | "scratch" | "reveal";
 
@@ -44,32 +44,71 @@ export default function Home() {
   };
 
   // ── Handlers ───────────────────────────────────────────────
-  const handleSendOtp = () => {
+  const handleSendOtp = async () => {
     if (!name.trim()) { setError("Please enter your name."); return; }
     if (!email.trim() || !email.includes("@")) { setError("Please enter a valid email."); return; }
     if (!phoneLocal.trim()) { setError("Please enter your phone number."); return; }
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const res = await fetch("/api/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: countryDial + phoneLocal }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error ?? "Failed to send OTP."); return; }
       setResendCooldown(60);
       goTo("otp");
-    }, 900);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
     if (otpDigits.join("").length < 6) { setError("Please enter all 6 digits."); return; }
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setPrize(pickPrize());
+    try {
+      const res = await fetch("/api/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: countryDial + phoneLocal,
+          code: otpDigits.join(""),
+          name,
+          email,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error ?? "Invalid OTP."); return; }
+      setPrize(getPrizeById(data.prizeId) ?? null);
       goTo("success");
-    }, 900);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleResend = () => {
-    setResendCooldown(60);
+  const handleResend = async () => {
     setOtpDigits(Array(6).fill(""));
     setError("");
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/send-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: countryDial + phoneLocal }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error ?? "Failed to resend OTP."); return; }
+      setResendCooldown(60);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleScratchComplete = useCallback(() => goTo("reveal"), []); // eslint-disable-line react-hooks/exhaustive-deps

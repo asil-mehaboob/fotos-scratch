@@ -1,0 +1,739 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model PhoneOtp {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+}
+
+model ScratchEntry {
+  id         String   @id @default(cuid())
+  name       String
+  email      String
+  phone      String
+  prizeId    Int
+  prizeLabel String
+  createdAt  DateTime @default(now())
+
+  @@index([phone])
+  @@index([email])
+}
+
+model Account {
+  id                String  @id
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model AdminUser {
+  id        String   @id
+  email     String   @unique
+  name      String
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model AttendeeDelivery {
+  id                   String               @id
+  registrationId       String               @unique
+  publicToken          String               @unique
+  status               DeliveryStatus       @default(PENDING)
+  sendAttempts         Int                  @default(0)
+  lastError            String?
+  sentAt               DateTime?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime
+  excludedPhotoIds     Json                 @default("[]")
+  AttendeeRegistration AttendeeRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  DeliveryPhoto        DeliveryPhoto[]
+
+  @@index([publicToken])
+  @@index([registrationId])
+}
+
+model AttendeeRegistration {
+  id               String            @id
+  eventId          String
+  name             String
+  email            String
+  selfieUrl        String
+  faceVector       Json?
+  faceQuality      Float?
+  consentAt        DateTime          @default(now())
+  createdAt        DateTime          @default(now())
+  faceQuality2     Float?
+  faceVector2      Json?
+  oldFaceVector    Json?
+  oldFaceQuality   Float?
+  phoneE164        String?
+  whatsappOptInAt  DateTime?
+  AttendeeDelivery AttendeeDelivery?
+  Event            Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, email])
+  @@index([email])
+  @@index([eventId])
+}
+
+model Client {
+  id                   String         @id
+  clientLinkId         String
+  name                 String
+  phone                String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime
+  email                String?
+  selectionCompleted   Boolean        @default(false)
+  selectionCompletedAt DateTime?
+  selectionCompletedBy String?
+  ClientLink           ClientLink     @relation(fields: [clientLinkId], references: [id], onDelete: Cascade)
+  ClientLike           ClientLike[]
+  PhotoComment         PhotoComment[]
+
+  @@unique([clientLinkId, phone])
+  @@index([clientLinkId])
+}
+
+model ClientLike {
+  id        String   @id
+  clientId  String
+  photoId   String
+  createdAt DateTime @default(now())
+  Client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  Photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, photoId])
+  @@index([clientId])
+  @@index([photoId])
+}
+
+model ClientLink {
+  id        String   @id
+  projectId String
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  eventId   String?
+  Client    Client[]
+  Event     Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  Project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([projectId])
+  @@index([token])
+}
+
+model Collection {
+  id                   String                 @id
+  userId               String
+  name                 String
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime
+  enablePhotoSelection Boolean                @default(true)
+  selectionLimit       Int?
+  collectClientEmail   Boolean                @default(true)
+  collectClientPhone   Boolean                @default(false)
+  passwordProtected    Boolean                @default(false)
+  galleryPassword      String?
+  allowGuestAccess     Boolean                @default(false)
+  allowDownload        Boolean                @default(true)
+  addWatermark         Boolean                @default(false)
+  expiresAt            DateTime?
+  deletedAt            DateTime?
+  expiryExtended       Boolean                @default(false)
+  User                 User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  CollectionClientLink CollectionClientLink[]
+  CollectionEvent      CollectionEvent[]
+  CollectionExport     CollectionExport[]
+
+  @@index([userId])
+}
+
+model CollectionClient {
+  id                     String                   @id
+  clientLinkId           String
+  name                   String
+  phone                  String?
+  email                  String?
+  selectionCompleted     Boolean                  @default(false)
+  selectionCompletedAt   DateTime?
+  selectionCompletedBy   String?
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime
+  CollectionClientLink   CollectionClientLink     @relation(fields: [clientLinkId], references: [id], onDelete: Cascade)
+  CollectionClientLike   CollectionClientLike[]
+  CollectionPhotoComment CollectionPhotoComment[]
+
+  @@unique([clientLinkId, phone])
+  @@index([clientLinkId])
+}
+
+model CollectionClientLike {
+  id               String           @id
+  clientId         String
+  photoId          String
+  createdAt        DateTime         @default(now())
+  CollectionClient CollectionClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  CollectionPhoto  CollectionPhoto  @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, photoId])
+  @@index([clientId])
+  @@index([photoId])
+}
+
+model CollectionClientLink {
+  id               String             @id
+  collectionId     String
+  token            String             @unique
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime
+  CollectionClient CollectionClient[]
+  Collection       Collection         @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@index([collectionId])
+  @@index([token])
+}
+
+model CollectionEvent {
+  id              String            @id
+  collectionId    String
+  name            String
+  order           Int               @default(0)
+  gallerySort     String            @default("name")
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime
+  Collection      Collection        @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  CollectionPhoto CollectionPhoto[]
+
+  @@index([collectionId])
+}
+
+model CollectionExport {
+  id           String     @id
+  collectionId String
+  clientName   String
+  csvContent   String
+  expiresAt    DateTime
+  createdAt    DateTime   @default(now())
+  Collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+
+  @@index([collectionId])
+}
+
+model CollectionPhoto {
+  id                         String                   @id
+  collectionEventId          String
+  url                        String
+  thumbnailUrl               String?
+  previewUrl                 String?
+  originalFileName           String?
+  originalSize               BigInt                   @default(0)
+  thumbnailSize              BigInt                   @default(0)
+  previewSize                BigInt                   @default(0)
+  order                      Int                      @default(0)
+  createdAt                  DateTime                 @default(now())
+  isImported                 Boolean                  @default(false)
+  sourceDeliveryEventPhotoId String?
+  CollectionClientLike       CollectionClientLike[]
+  CollectionEvent            CollectionEvent          @relation(fields: [collectionEventId], references: [id], onDelete: Cascade)
+  DeliveryEventPhoto         DeliveryEventPhoto?      @relation(fields: [sourceDeliveryEventPhotoId], references: [id])
+  CollectionPhotoComment     CollectionPhotoComment[]
+
+  @@index([collectionEventId])
+  @@index([sourceDeliveryEventPhotoId])
+}
+
+model CollectionPhotoComment {
+  id               String           @id
+  clientId         String
+  photoId          String
+  text             String
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime
+  CollectionClient CollectionClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  CollectionPhoto  CollectionPhoto  @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, photoId])
+  @@index([clientId])
+  @@index([photoId])
+}
+
+model DeliveryEvent {
+  id                        String                      @id
+  name                      String
+  date                      DateTime?
+  venue                     String?
+  userId                    String
+  registrationCoverUrl      String?
+  createdAt                 DateTime                    @default(now())
+  updatedAt                 DateTime
+  order                     Int                         @default(0)
+  highlightPhotoIds         Json                        @default("[]")
+  highlightItems            Json                        @default("[]")
+  watermarkEnabled          Boolean                     @default(true)
+  brandedDownloads          Int                         @default(0)
+  pageViews                 Int                         @default(0)
+  contactClicks             Int                         @default(0)
+  shareClicks               Int                         @default(0)
+  socialClicks              Int                         @default(0)
+  totalDownloads            Int                         @default(0)
+  bulkDownloads             Int                         @default(0)
+  favoriteClicks            Int                         @default(0)
+  qrScans                   Int                         @default(0)
+  sessionCount              Int                         @default(0)
+  singleDownloads           Int                         @default(0)
+  totalSessionDuration      Int                         @default(0)
+  coverFocalX               Float                       @default(0.5)
+  coverFocalY               Float                       @default(0.5)
+  User                      User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  DeliveryEventPhoto        DeliveryEventPhoto[]
+  DeliveryEventQRCode       DeliveryEventQRCode?
+  DeliveryEventRegistration DeliveryEventRegistration[]
+
+  @@index([userId])
+}
+
+model DeliveryEventDelivery {
+  id                        String                      @id
+  registrationId            String                      @unique
+  publicToken               String                      @unique
+  status                    DeliveryStatus              @default(PENDING)
+  sendAttempts              Int                         @default(0)
+  lastError                 String?
+  sentAt                    DateTime?
+  excludedPhotoIds          Json                        @default("[]")
+  createdAt                 DateTime                    @default(now())
+  updatedAt                 DateTime
+  DeliveryEventRegistration DeliveryEventRegistration   @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  DeliveryEventMatchedPhoto DeliveryEventMatchedPhoto[]
+
+  @@index([publicToken])
+}
+
+model DeliveryEventMatchedPhoto {
+  id                    String                @id
+  deliveryId            String
+  photoId               String
+  createdAt             DateTime              @default(now())
+  DeliveryEventDelivery DeliveryEventDelivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  DeliveryEventPhoto    DeliveryEventPhoto    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([deliveryId, photoId])
+  @@index([deliveryId])
+}
+
+model DeliveryEventPhoto {
+  id                        String                      @id
+  deliveryEventId           String
+  url                       String
+  thumbnailUrl              String?
+  previewUrl                String?
+  originalSize              BigInt                      @default(0)
+  thumbnailSize             BigInt                      @default(0)
+  originalFileName          String?
+  order                     Int                         @default(0)
+  createdAt                 DateTime                    @default(now())
+  previewSize               BigInt                      @default(0)
+  likes                     Int                         @default(0)
+  CollectionPhoto           CollectionPhoto[]
+  DeliveryEventMatchedPhoto DeliveryEventMatchedPhoto[]
+  DeliveryEvent             DeliveryEvent               @relation(fields: [deliveryEventId], references: [id], onDelete: Cascade)
+
+  @@index([deliveryEventId])
+}
+
+model DeliveryEventPhotoFace {
+  id              String                @id
+  photoId         String
+  deliveryEventId String
+  faceIndex       Int
+  quality         Float
+  vector          Unsupported("vector")
+
+  @@index([deliveryEventId])
+  @@index([photoId])
+  @@index([vector], map: "DeliveryEventPhotoFace_vector_hnsw_idx")
+}
+
+model DeliveryEventQRCode {
+  id              String        @id
+  deliveryEventId String        @unique
+  token           String        @unique
+  createdAt       DateTime      @default(now())
+  DeliveryEvent   DeliveryEvent @relation(fields: [deliveryEventId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+}
+
+model DeliveryEventRegistration {
+  id                    String                 @id
+  deliveryEventId       String
+  name                  String
+  email                 String?
+  selfieUrl             String
+  faceVector2           Json?
+  faceQuality2          Float?
+  phoneE164             String?
+  consentAt             DateTime               @default(now())
+  createdAt             DateTime               @default(now())
+  DeliveryEventDelivery DeliveryEventDelivery?
+  DeliveryEvent         DeliveryEvent          @relation(fields: [deliveryEventId], references: [id], onDelete: Cascade)
+
+  @@index([deliveryEventId])
+  @@index([deliveryEventId, phoneE164])
+}
+
+model DeliveryPhoto {
+  id               String           @id
+  deliveryId       String
+  photoId          String
+  createdAt        DateTime         @default(now())
+  AttendeeDelivery AttendeeDelivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+  Photo            Photo            @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([deliveryId, photoId])
+  @@index([deliveryId])
+  @@index([photoId])
+}
+
+model Event {
+  id                   String                 @id
+  name                 String
+  date                 DateTime?
+  venue                String?
+  location             String?
+  projectId            String
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime
+  registrationCoverUrl String?
+  order                Int                    @default(0)
+  gallerySort          String                 @default("name")
+  AttendeeRegistration AttendeeRegistration[]
+  ClientLink           ClientLink[]
+  Project              Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  EventQRCode          EventQRCode?
+  Gallery              Gallery[]
+  Photo                Photo[]
+
+  @@index([projectId])
+}
+
+model EventQRCode {
+  id        String   @id
+  eventId   String   @unique
+  token     String   @unique
+  createdAt DateTime @default(now())
+  Event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+}
+
+model Gallery {
+  id           String         @id
+  heading      String
+  coverPhoto   String
+  font         String
+  eventId      String
+  slug         String         @unique
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime
+  Event        Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  GalleryPhoto GalleryPhoto[]
+
+  @@index([eventId])
+}
+
+model GalleryPhoto {
+  id        String   @id
+  galleryId String
+  photoId   String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  Gallery   Gallery  @relation(fields: [galleryId], references: [id], onDelete: Cascade)
+  Photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([galleryId, photoId])
+  @@index([galleryId])
+}
+
+model PasswordResetToken {
+  id        String   @id
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+model Photo {
+  id               String          @id
+  url              String
+  thumbnailUrl     String?
+  originalSize     BigInt          @default(0)
+  thumbnailSize    BigInt          @default(0)
+  originalFileName String?
+  eventId          String
+  faceVectors      Json?
+  createdAt        DateTime        @default(now())
+  faceVectors2     Json?
+  oldFaceVectors   Json?
+  previewUrl       String?
+  order            Int             @default(0)
+  previewSize      BigInt          @default(0)
+  ClientLike       ClientLike[]
+  DeliveryPhoto    DeliveryPhoto[]
+  GalleryPhoto     GalleryPhoto[]
+  Event            Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  PhotoComment     PhotoComment[]
+
+  @@index([eventId])
+}
+
+model PhotoComment {
+  id        String   @id
+  clientId  String
+  photoId   String
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  Photo     Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, photoId])
+  @@index([clientId])
+  @@index([photoId])
+}
+
+model PhotoFace {
+  id        String                @id
+  photoId   String
+  eventId   String
+  faceIndex Int
+  quality   Float
+  vector    Unsupported("vector")
+
+  @@index([eventId])
+  @@index([photoId])
+  @@index([vector], map: "PhotoFace_vector_hnsw_idx")
+}
+
+model PortfolioFolder {
+  id                 String               @id
+  name               String
+  userId             String
+  order              Int                  @default(0)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime
+  User               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  PortfolioSubfolder PortfolioSubfolder[]
+
+  @@index([userId])
+}
+
+model PortfolioHeroPhoto {
+  id               String   @id
+  userId           String
+  url              String
+  thumbnailUrl     String?
+  previewUrl       String?
+  originalFileName String?
+  originalSize     BigInt   @default(0)
+  thumbnailSize    BigInt   @default(0)
+  previewSize      BigInt   @default(0)
+  order            Int      @default(0)
+  createdAt        DateTime @default(now())
+  focalX           Float    @default(0.5)
+  focalY           Float    @default(0.5)
+  viewport         String   @default("DESKTOP")
+  User             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PortfolioPhoto {
+  id                 String             @id
+  url                String
+  thumbnailUrl       String?
+  previewUrl         String?
+  originalFileName   String?
+  originalSize       BigInt             @default(0)
+  thumbnailSize      BigInt             @default(0)
+  previewSize        BigInt             @default(0)
+  order              Int                @default(0)
+  subfolderId        String
+  createdAt          DateTime           @default(now())
+  PortfolioSubfolder PortfolioSubfolder @relation(fields: [subfolderId], references: [id], onDelete: Cascade)
+
+  @@index([subfolderId])
+}
+
+model PortfolioSubfolder {
+  id              String           @id
+  name            String
+  folderId        String
+  order           Int              @default(0)
+  gallerySort     String           @default("newest")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime
+  PortfolioPhoto  PortfolioPhoto[]
+  PortfolioFolder PortfolioFolder  @relation(fields: [folderId], references: [id], onDelete: Cascade)
+
+  @@index([folderId])
+}
+
+model PortfolioTestimonial {
+  id              String   @id
+  userId          String
+  clientName      String
+  quote           String
+  clientPhotoUrl  String?
+  clientRole      String?
+  order           Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime
+  eventImageUrl   String?
+  clientPhotoSize BigInt   @default(0)
+  eventImageSize  BigInt   @default(0)
+  User            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Project {
+  id                         String       @id
+  name                       String
+  date                       DateTime?
+  userId                     String
+  createdAt                  DateTime     @default(now())
+  updatedAt                  DateTime
+  coverPhotoUrl              String?
+  slug                       String?
+  published                  Boolean      @default(false)
+  addWatermark               Boolean      @default(false)
+  allowDownload              Boolean      @default(true)
+  storageDuration            Int?
+  expiresAt                  DateTime?
+  collectClientEmail         Boolean      @default(true)
+  collectClientPhone         Boolean      @default(false)
+  enablePhotoSelection       Boolean      @default(true)
+  selectionLimit             Int?
+  passwordProtected          Boolean      @default(false)
+  galleryPassword            String?
+  allowGuestAccess           Boolean      @default(false)
+  micrositePassword          String?
+  micrositePasswordProtected Boolean      @default(false)
+  coverFocalX                Float        @default(0.5)
+  coverFocalY                Float        @default(0.5)
+  coverPhotoThumbnailUrl     String?
+  ClientLink                 ClientLink[]
+  Event                      Event[]
+  User                       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, slug])
+}
+
+model User {
+  id                     String                 @id
+  name                   String
+  email                  String                 @unique
+  password               String?
+  emailVerified          DateTime?
+  brandLogoUrl           String?
+  showBrandLogoUnderPics Boolean                @default(false)
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime
+  totalMemoryAllocated   BigInt                 @default(1000000000000)
+  validUntil             DateTime?
+  subscriptionType       String?
+  razorpaySubscriptionId String?
+  razorpayPaymentId      String?
+  studioAddress          String?
+  studioEmail            String?
+  studioFacebook         String?
+  studioInstagram        String?
+  studioName             String?
+  studioPrimaryMobile    String?
+  studioSecondaryMobile  String?
+  studioYoutube          String?
+  username               String?                @unique
+  planTier               String?
+  onboardingCompleted    Boolean                @default(false)
+  watermarkPosition      String?
+  watermarkOpacity       Float?                 @default(0.6) @db.Real
+  eventsCreated          Int                    @default(0)
+  aiDeliveriesUsed       Int                    @default(0)
+  storageUsedBytes       BigInt                 @default(0)
+  lastUsageUpdatedAt     DateTime               @default(now())
+  billingCycleStartedAt  DateTime?
+  micrositeSlug          String?                @unique
+  aboutExcerpt           String?
+  aboutPhotoUrl          String?
+  studioMapUrl           String?
+  aboutPhotoSize         BigInt                 @default(0)
+  Account                Account[]
+  Collection             Collection[]
+  DeliveryEvent          DeliveryEvent[]
+  PasswordResetToken     PasswordResetToken[]
+  PortfolioFolder        PortfolioFolder[]
+  PortfolioHeroPhoto     PortfolioHeroPhoto[]
+  PortfolioTestimonial   PortfolioTestimonial[]
+  Project                Project[]
+  UserDashboardStats     UserDashboardStats?
+}
+
+model UserDashboardStats {
+  id                    String    @id
+  userId                String    @unique
+  totalProjects         Int       @default(0)
+  totalPhotos           Int       @default(0)
+  totalStorageBytes     BigInt    @default(0)
+  lastUploadAt          DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime
+  totalBrandedDownloads Int       @default(0)
+  totalPageViews        Int       @default(0)
+  totalContactClicks    Int       @default(0)
+  totalDownloads        Int       @default(0)
+  totalShareClicks      Int       @default(0)
+  totalSocialClicks     Int       @default(0)
+  totalBulkDownloads    Int       @default(0)
+  totalFavoriteClicks   Int       @default(0)
+  totalQrScans          Int       @default(0)
+  totalSingleDownloads  Int       @default(0)
+  User                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([updatedAt])
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+}
