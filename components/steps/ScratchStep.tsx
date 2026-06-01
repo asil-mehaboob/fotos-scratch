@@ -14,7 +14,7 @@ interface ScratchStepProps {
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1], delay },
+  transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const, delay },
 });
 
 export function ScratchStep({ prize, onComplete }: ScratchStepProps) {
@@ -47,7 +47,7 @@ export function ScratchStep({ prize, onComplete }: ScratchStepProps) {
         style={{ width: "100%", maxWidth: 480, height: 280 }}
         initial={{ opacity: 0, scale: 0.94, y: 16 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1], delay: 0.16 }}
+        transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] as const, delay: 0.16 }}
       >
         <div className="absolute inset-0 flex flex-col items-center justify-center rounded-2xl bg-gradient-to-br from-amber-50 to-orange-50 border border-orange-100">
           <PrizeIcon size={64} weight="duotone" className="text-[#fa4f00]" />

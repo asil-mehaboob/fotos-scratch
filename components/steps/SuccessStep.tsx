@@ -8,7 +8,7 @@ export function SuccessStep() {
       className="text-center py-4"
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as const }}
     >
       {/* Animated SVG checkmark */}
       <div className="mx-auto w-24 h-24">
@@ -38,7 +38,7 @@ export function SuccessStep() {
         className="mt-6 text-4xl font-bold tracking-tight text-gray-900"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 0.9 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as const, delay: 0.9 }}
       >
         You&apos;re in!
       </motion.h2>
@@ -47,7 +47,7 @@ export function SuccessStep() {
         className="mt-2 text-sm text-gray-500"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: 1.1 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] as const, delay: 1.1 }}
       >
         Get ready to scratch your card…
       </motion.p>

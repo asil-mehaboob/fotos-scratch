@@ -15,7 +15,7 @@ interface RevealStepProps {
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1], delay },
+  transition: { duration: 0.55, ease: [0.22, 1, 0.36, 1] as const, delay },
 });
 
 export function RevealStep({ prize, name, onReset }: RevealStepProps) {
@@ -38,7 +38,7 @@ export function RevealStep({ prize, name, onReset }: RevealStepProps) {
         className="inline-flex items-center justify-center w-32 h-32 rounded-full bg-orange-50 border border-orange-100 mb-6"
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const, delay: 0.1 }}
       >
         <PrizeIcon size={72} weight="duotone" className="text-[#fa4f00]" />
       </motion.div>

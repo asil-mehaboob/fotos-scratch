@@ -11,7 +11,7 @@ interface SplashStepProps {
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 32 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 1.0, ease: [0.22, 1, 0.36, 1], delay },
+  transition: { duration: 1.0, ease: [0.22, 1, 0.36, 1] as const, delay },
 });
 
 const fadeIn = (delay = 0) => ({
@@ -56,7 +56,7 @@ export function SplashStep({ onNext }: SplashStepProps) {
           className="w-full"
           initial={{ opacity: 0, scale: 0.88, y: 24 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] as const, delay: 0.3 }}
         >
           <Image
             src="/image.png"
@@ -92,7 +92,7 @@ export function SplashStep({ onNext }: SplashStepProps) {
           className="mt-8 w-full py-4 rounded-full bg-[#fa4f00] text-white font-semibold text-base flex items-center justify-center gap-2 "
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1], delay: 0.82 }}
+          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] as const, delay: 0.82 }}
           whileHover={{ backgroundColor: "#d44200", scale: 1.02 }}
           whileTap={{ scale: 0.97 }}
         >
