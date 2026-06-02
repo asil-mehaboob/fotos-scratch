@@ -4,11 +4,11 @@ import { pickPrizeConfig } from "@/lib/prizes-config";
 
 export async function POST(request: NextRequest) {
   try {
-    const { phone, code, name, email } = await request.json();
+    const { phone, code, name, studioName } = await request.json();
 
-    if (!phone || !code || !name || !email) {
+    if (!phone || !code || !name || !studioName) {
       return NextResponse.json(
-        { error: "Phone, code, name and email are required" },
+        { error: "Phone, code, name and studio name are required" },
         { status: 400 }
       );
     }
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     await prisma.scratchEntry.create({
       data: {
         name,
-        email,
+        email: studioName,
         phone,
         prizeId: prize.id,
         prizeLabel: prize.label,

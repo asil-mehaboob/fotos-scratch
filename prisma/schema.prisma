@@ -627,34 +627,63 @@ model PortfolioTestimonial {
 }
 
 model Project {
-  id                         String       @id
-  name                       String
-  date                       DateTime?
-  userId                     String
-  createdAt                  DateTime     @default(now())
-  updatedAt                  DateTime
-  coverPhotoUrl              String?
-  slug                       String?
-  published                  Boolean      @default(false)
-  addWatermark               Boolean      @default(false)
-  allowDownload              Boolean      @default(true)
-  storageDuration            Int?
-  expiresAt                  DateTime?
-  collectClientEmail         Boolean      @default(true)
-  collectClientPhone         Boolean      @default(false)
-  enablePhotoSelection       Boolean      @default(true)
-  selectionLimit             Int?
-  passwordProtected          Boolean      @default(false)
-  galleryPassword            String?
-  allowGuestAccess           Boolean      @default(false)
-  micrositePassword          String?
-  micrositePasswordProtected Boolean      @default(false)
-  coverFocalX                Float        @default(0.5)
-  coverFocalY                Float        @default(0.5)
-  coverPhotoThumbnailUrl     String?
-  ClientLink                 ClientLink[]
-  Event                      Event[]
-  User                       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                                  String                @id
+  name                                String
+  date                                DateTime?
+  userId                              String
+  createdAt                           DateTime              @default(now())
+  updatedAt                           DateTime
+  coverPhotoUrl                       String?
+  slug                                String?
+  published                           Boolean               @default(false)
+  addWatermark                        Boolean               @default(false)
+  allowDownload                       Boolean               @default(true)
+  storageDuration                     Int?
+  expiresAt                           DateTime?
+  collectClientEmail                  Boolean               @default(true)
+  collectClientPhone                  Boolean               @default(false)
+  enablePhotoSelection                Boolean               @default(true)
+  selectionLimit                      Int?
+  passwordProtected                   Boolean               @default(false)
+  galleryPassword                     String?
+  allowGuestAccess                    Boolean               @default(false)
+  coverFocalX                         Float                 @default(0.5)
+  coverFocalY                         Float                 @default(0.5)
+  coverPhotoThumbnailUrl              String?
+  authenticatedPhotosViewedInLightbox Int                   @default(0)
+  authenticatedSessionCount           Int                   @default(0)
+  authenticatedSessionDuration        Int                   @default(0)
+  authenticatedViews                  Int                   @default(0)
+  brandedDownloads                    Int                   @default(0)
+  bulkDownloads                       Int                   @default(0)
+  highlightItems                      Json                  @default("[]")
+  highlightPhotoIds                   Json                  @default("[]")
+  pageViews                           Int                   @default(0)
+  photosViewedInLightbox              Int                   @default(0)
+  portfolioClicks                     Int                   @default(0)
+  qrScans                             Int                   @default(0)
+  selfieButtonClicks                  Int                   @default(0)
+  sessionCount                        Int                   @default(0)
+  singleDownloads                     Int                   @default(0)
+  totalDownloads                      Int                   @default(0)
+  totalSessionDuration                Int                   @default(0)
+  coverLayout                         String                @default("hero")
+  albumFont                           String                @default("figtree")
+  albumTheme                          String                @default("white")
+  enableAiDelivery                    Boolean               @default(false)
+  isPublic                            Boolean               @default(true)
+  allowBulkDownload                   Boolean               @default(true)
+  allowCommenting                     Boolean               @default(true)
+  allowLiking                         Boolean               @default(true)
+  notifyOnClientOpen                  Boolean               @default(true)
+  notifyOnSelectionComplete           Boolean               @default(true)
+  aiDeliveryAllowGuestDownload        Boolean               @default(false)
+  ClientLink                          ClientLink[]
+  Event                               Event[]
+  User                                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ProjectClient                       ProjectClient[]
+  ProjectQRCode                       ProjectQRCode?
+  ProjectRegistration                 ProjectRegistration[]
 
   @@unique([userId, slug])
 }
@@ -698,6 +727,7 @@ model User {
   studioMapUrl           String?
   aboutPhotoSize         BigInt                 @default(0)
   Account                Account[]
+  AlbumBook              AlbumBook[]
   Collection             Collection[]
   DeliveryEvent          DeliveryEvent[]
   PasswordResetToken     PasswordResetToken[]
@@ -730,6 +760,102 @@ model UserDashboardStats {
   User                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([updatedAt])
+}
+
+model AlbumBook {
+  id            String   @id
+  userId        String
+  title         String
+  pdfUrl        String?
+  pdfSize       BigInt   @default(0)
+  pageCount     Int?
+  slug          String   @unique
+  published     Boolean  @default(false)
+  allowDownload Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime
+  User          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([slug])
+  @@index([userId])
+}
+
+model ProjectClient {
+  id                   String                 @id
+  projectId            String
+  name                 String
+  email                String?
+  phone                String?
+  selectionCompleted   Boolean                @default(false)
+  selectionCompletedAt DateTime?
+  selectionCompletedBy String?
+  createdAt            DateTime               @default(now())
+  Project              Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  ProjectClientComment ProjectClientComment[]
+  ProjectClientLike    ProjectClientLike[]
+
+  @@unique([projectId, email])
+  @@index([projectId])
+}
+
+model ProjectClientComment {
+  id            String        @id
+  clientId      String
+  photoId       String
+  text          String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime
+  ProjectClient ProjectClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, photoId])
+  @@index([clientId])
+  @@index([photoId])
+}
+
+model ProjectClientLike {
+  id            String        @id
+  clientId      String
+  photoId       String
+  createdAt     DateTime      @default(now())
+  ProjectClient ProjectClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  @@unique([clientId, photoId])
+  @@index([clientId])
+  @@index([photoId])
+}
+
+model ProjectQRCode {
+  id        String   @id
+  projectId String   @unique
+  token     String   @unique
+  createdAt DateTime @default(now())
+  Project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+}
+
+model ProjectRegistration {
+  id              String    @id
+  projectId       String
+  name            String
+  email           String?
+  selfieUrl       String?
+  faceVector      Float[]
+  faceQuality     Float?
+  faceVector2     Float[]
+  faceQuality2    Float?
+  oldFaceVector   Float[]
+  oldFaceQuality  Float?
+  phoneE164       String?
+  whatsappOptInAt DateTime?
+  notifiedAt      DateTime?
+  createdAt       DateTime  @default(now())
+  consentAt       DateTime  @default(now())
+  registrantToken String    @unique
+  Project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, email])
+  @@index([projectId])
 }
 
 enum DeliveryStatus {

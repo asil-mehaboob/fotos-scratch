@@ -19,7 +19,7 @@ export default function Home() {
 
   // Form
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [studioName, setStudioName] = useState("");
   const [countryDial, setCountryDial] = useState("+91");
   const [phoneLocal, setPhoneLocal] = useState("");
   const [isAkmpMember, setIsAkmpMember] = useState(false);
@@ -45,7 +45,7 @@ export default function Home() {
   // ── Handlers ───────────────────────────────────────────────
   const handleSendOtp = async () => {
     if (!name.trim()) { setError("Please enter your name."); return; }
-    if (!email.trim() || !email.includes("@")) { setError("Please enter a valid email."); return; }
+    if (!studioName.trim()) { setError("Please enter your studio name."); return; }
     if (!phoneLocal.trim()) { setError("Please enter your phone number."); return; }
     setIsLoading(true);
     try {
@@ -76,7 +76,7 @@ export default function Home() {
           phone: countryDial + phoneLocal,
           code: otpDigits.join(""),
           name,
-          email,
+          studioName,
         }),
       });
       const data = await res.json();
@@ -160,14 +160,14 @@ export default function Home() {
             <FormStep
               key={`form-${animKey}`}
               name={name}
-              email={email}
+              studioName={studioName}
               countryDial={countryDial}
               phoneLocal={phoneLocal}
               isAkmpMember={isAkmpMember}
               isLoading={isLoading}
               error={error}
               onNameChange={setName}
-              onEmailChange={setEmail}
+              onStudioNameChange={setStudioName}
               onCountryDialChange={setCountryDial}
               onPhoneLocalChange={setPhoneLocal}
               onAkmpMemberChange={setIsAkmpMember}

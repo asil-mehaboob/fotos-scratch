@@ -10,14 +10,14 @@ import { Spinner } from "@/components/ui/Spinner";
 
 interface FormStepProps {
   name: string;
-  email: string;
+  studioName: string;
   countryDial: string;
   phoneLocal: string;
   isAkmpMember: boolean;
   isLoading: boolean;
   error: string;
   onNameChange: (v: string) => void;
-  onEmailChange: (v: string) => void;
+  onStudioNameChange: (v: string) => void;
   onCountryDialChange: (v: string) => void;
   onPhoneLocalChange: (v: string) => void;
   onAkmpMemberChange: (v: boolean) => void;
@@ -32,14 +32,14 @@ const fadeUp = (delay = 0) => ({
 
 export function FormStep({
   name,
-  email,
+  studioName,
   countryDial,
   phoneLocal,
   isAkmpMember,
   isLoading,
   error,
   onNameChange,
-  onEmailChange,
+  onStudioNameChange,
   onCountryDialChange,
   onPhoneLocalChange,
   onAkmpMemberChange,
@@ -86,13 +86,13 @@ export function FormStep({
         />
 
         <Input
-          label="Email"
-          type="email"
-          value={email}
-          onChange={(e) => onEmailChange(e.target.value)}
+          label="Studio Name"
+          type="text"
+          value={studioName}
+          onChange={(e) => onStudioNameChange(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="john@example.com"
-          autoComplete="email"
+          placeholder="Your Studio Name"
+          autoComplete="organization"
         />
 
         <div>
