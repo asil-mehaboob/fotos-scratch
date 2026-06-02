@@ -13,14 +13,14 @@ interface FormStepProps {
   studioName: string;
   countryDial: string;
   phoneLocal: string;
-  isAkmpMember: boolean;
+  isAkpaMember: boolean;
   isLoading: boolean;
   error: string;
   onNameChange: (v: string) => void;
   onStudioNameChange: (v: string) => void;
   onCountryDialChange: (v: string) => void;
   onPhoneLocalChange: (v: string) => void;
-  onAkmpMemberChange: (v: boolean) => void;
+  onAkpaMemberChange: (v: boolean) => void;
   onSubmit: () => void;
 }
 
@@ -35,14 +35,14 @@ export function FormStep({
   studioName,
   countryDial,
   phoneLocal,
-  isAkmpMember,
+  isAkpaMember,
   isLoading,
   error,
   onNameChange,
   onStudioNameChange,
   onCountryDialChange,
   onPhoneLocalChange,
-  onAkmpMemberChange,
+  onAkpaMemberChange,
   onSubmit,
 }: FormStepProps) {
   const handleKey = (e: React.KeyboardEvent) => {
@@ -114,21 +114,21 @@ export function FormStep({
           </div>
         </div>
 
-        {/* AKMP member checkbox */}
+        {/* Akpa member checkbox */}
         <button
           type="button"
-          onClick={() => onAkmpMemberChange(!isAkmpMember)}
+          onClick={() => onAkpaMemberChange(!isAkpaMember)}
           className="flex items-center gap-3 group"
         >
           <motion.div
             className="w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors duration-150"
             animate={{
-              borderColor: isAkmpMember ? "#fa4f00" : "#d1d5db",
-              backgroundColor: isAkmpMember ? "#fa4f00" : "#ffffff",
+              borderColor: isAkpaMember ? "#fa4f00" : "#d1d5db",
+              backgroundColor: isAkpaMember ? "#fa4f00" : "#ffffff",
             }}
             transition={{ duration: 0.15 }}
           >
-            {isAkmpMember && (
+            {isAkpaMember && (
               <motion.svg
                 width="11" height="9" viewBox="0 0 11 9" fill="none"
                 initial={{ opacity: 0, scale: 0.5 }}
@@ -146,7 +146,7 @@ export function FormStep({
             )}
           </motion.div>
           <span className="text-sm text-gray-700 group-hover:text-gray-900 transition-colors select-none">
-            I am an <span className="font-medium">AKMP member</span>
+            I am an <span className="font-medium">AKPA member.</span>
           </span>
         </button>
 

@@ -22,7 +22,7 @@ export default function Home() {
   const [studioName, setStudioName] = useState("");
   const [countryDial, setCountryDial] = useState("+91");
   const [phoneLocal, setPhoneLocal] = useState("");
-  const [isAkmpMember, setIsAkmpMember] = useState(false);
+  const [isAkpaMember, setIsAkpaMember] = useState(false);
 
   // OTP
   const [otpDigits, setOtpDigits] = useState<string[]>(Array(6).fill(""));
@@ -114,11 +114,11 @@ export default function Home() {
 
   const handleReset = () => {
     setName("");
-    setEmail("");
+    setStudioName("");
     setPhoneLocal("");
     setCountryDial("+91");
     setOtpDigits(Array(6).fill(""));
-    setIsAkmpMember(false);
+    setIsAkpaMember(false);
     setPrize(null);
     setError("");
     goTo("form");
@@ -163,14 +163,14 @@ export default function Home() {
               studioName={studioName}
               countryDial={countryDial}
               phoneLocal={phoneLocal}
-              isAkmpMember={isAkmpMember}
+              isAkpaMember={isAkpaMember}
               isLoading={isLoading}
               error={error}
               onNameChange={setName}
               onStudioNameChange={setStudioName}
               onCountryDialChange={setCountryDial}
               onPhoneLocalChange={setPhoneLocal}
-              onAkmpMemberChange={setIsAkmpMember}
+              onAkpaMemberChange={setIsAkpaMember}
               onSubmit={handleSendOtp}
             />
           )}
