@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { pickPrizeConfig } from "@/lib/prizes-config";
+import { pickPrizeConfig, type CouponTier } from "@/lib/prizes-config";
+
+function generateCouponCode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const seg = Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  return `FOTO${seg}`;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +15,15 @@ export async function POST(request: NextRequest) {
     if (!phone || !code || !name || !studioName) {
       return NextResponse.json(
         { error: "Phone, code, name and studio name are required" },
+        { status: 400 }
+      );
+    }
+
+    // One coupon per phone number
+    const existingEntry = await prisma.scratchEntry.findFirst({ where: { phone } });
+    if (existingEntry) {
+      return NextResponse.json(
+        { error: "This phone number has already participated." },
         { status: 400 }
       );
     }
@@ -37,10 +52,14 @@ export async function POST(request: NextRequest) {
       data: { used: true },
     });
 
-    // Pick prize server-side and save entry
-    const prize = pickPrizeConfig();
+    // Check JACKPOT cap (max 1 winner total)
+    const jackpotCount = await prisma.coupon.count({ where: { tier: "JACKPOT" } });
+    const excludeTiers: CouponTier[] = jackpotCount >= 1 ? ["JACKPOT"] : [];
 
-    await prisma.scratchEntry.create({
+    const prize = pickPrizeConfig(excludeTiers);
+
+    // Create scratch entry
+    const entry = await prisma.scratchEntry.create({
       data: {
         name,
         email: studioName,
@@ -50,7 +69,31 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ prizeId: prize.id, prizeLabel: prize.label });
+    // Create coupon for winning tiers
+    let couponCode: string | null = null;
+    if (prize.tier) {
+      couponCode = generateCouponCode();
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30);
+
+      await prisma.coupon.create({
+        data: {
+          code: couponCode,
+          tier: prize.tier as CouponTier,
+          phoneNumber: phone,
+          scratchEntryId: entry.id,
+          expiresAt,
+        },
+      });
+    }
+
+    return NextResponse.json({
+      prizeId: prize.id,
+      prizeLabel: prize.label,
+      prizeTier: prize.tier,
+      eligibilityNote: prize.eligibilityNote,
+      couponCode,
+    });
   } catch (error) {
     console.error("Verify OTP error:", error);
     return NextResponse.json({ error: "Verification failed" }, { status: 500 });

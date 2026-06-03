@@ -1,4 +1,4 @@
-import { Gift, CreditCard, Tag, Truck, Clover, type Icon } from "@phosphor-icons/react";
+import { Crown, Star, Tag, CurrencyInr, Clover, type Icon } from "@phosphor-icons/react";
 import { PRIZE_CONFIGS, type PrizeConfig } from "./prizes-config";
 
 export interface Prize extends PrizeConfig {
@@ -6,11 +6,11 @@ export interface Prize extends PrizeConfig {
 }
 
 const ICON_MAP: Record<number, Icon> = {
-  1: Gift,
-  2: CreditCard,
-  3: Tag,
-  4: Truck,
-  5: Clover,
+  1: Crown,      // JACKPOT
+  2: Star,       // GOLD
+  3: Tag,        // SILVER
+  4: CurrencyInr, // BRONZE
+  5: Clover,     // No prize
 };
 
 export const PRIZES: Prize[] = PRIZE_CONFIGS.map((p) => ({

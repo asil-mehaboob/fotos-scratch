@@ -1,23 +1,18 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ArrowRight, Copy, Check, ShareNetwork } from "@phosphor-icons/react";
+import { ArrowRight, Copy, Check, ShareNetwork, SmileyMeh } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/Button";
 import type { Prize } from "@/lib/prizes";
 
 interface RevealStepProps {
   prize: Prize;
   name: string;
+  couponCode: string | null;
+  eligibilityNote: string | null;
   onReset: () => void;
-}
-
-function generateCode() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const seg = (n: number) =>
-    Array.from({ length: n }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-  return `FOTO${seg(8)}`;
 }
 
 const fadeUp = (delay = 0) => ({
@@ -28,31 +23,94 @@ const fadeUp = (delay = 0) => ({
 
 const CLAIM_URL = "https://app.usefotos.com/signup";
 
-export function RevealStep({ prize, name, onReset }: RevealStepProps) {
-  const { label } = prize;
-  const couponCode = useMemo(generateCode, []);
+const TIER_COLORS: Record<string, { from: string; via: string; to: string }> = {
+  JACKPOT: { from: "#7c3aed", via: "#6d28d9", to: "#4c1d95" },
+  GOLD:    { from: "#d97706", via: "#b45309", to: "#92400e" },
+  SILVER:  { from: "#475569", via: "#334155", to: "#1e293b" },
+  BRONZE:  { from: "#ff6820", via: "#fa4f00", to: "#cc3d00" },
+};
+
+export function RevealStep({ prize, name, couponCode, eligibilityNote, onReset }: RevealStepProps) {
+  const { label, tier } = prize;
   const [copied, setCopied] = useState(false);
 
   const handleCopyCode = useCallback(async () => {
+    if (!couponCode) return;
     await navigator.clipboard.writeText(couponCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [couponCode]);
 
   const handleShare = useCallback(async () => {
-    const text = `🎉 I just won ${label} from fotos.studio! Use my coupon code ${couponCode} and sign up at ${CLAIM_URL}`;
+    const text = couponCode
+      ? `🎉 I just won ${label} from fotos.studio! Use my coupon code ${couponCode} and sign up at ${CLAIM_URL}`
+      : `🎉 I just played the fotos.studio Photofest Scratch & Win! Sign up at ${CLAIM_URL}`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: "I won a prize from fotos.studio!", text, url: CLAIM_URL });
+        await navigator.share({ title: "fotos.studio Photofest", text, url: CLAIM_URL });
         return;
       } catch {
-        // user cancelled or share failed — fall through
+        // user cancelled — fall through
       }
     }
-    // WhatsApp fallback
     const wa = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(wa, "_blank", "noopener,noreferrer");
   }, [label, couponCode]);
+
+  const colors = tier ? TIER_COLORS[tier] : null;
+  const gradientStyle = colors
+    ? { background: `linear-gradient(140deg, ${colors.from} 0%, ${colors.via} 55%, ${colors.to} 100%)` }
+    : { background: "linear-gradient(140deg, #64748b 0%, #475569 55%, #1e293b 100%)" };
+
+  // No-prize view
+  if (!tier) {
+    return (
+      <motion.div
+        className="text-center"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.35 }}
+      >
+        <motion.div className="flex justify-center mb-6" {...fadeUp(0)}>
+          <Image src="/logo.png" alt="fotos.studio" width={160} height={42} className="h-10 w-auto object-contain" />
+        </motion.div>
+
+        <motion.div className="mb-8" {...fadeUp(0.07)}>
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+              <SmileyMeh size={32} className="text-gray-400" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900 mb-2">Better Luck Next Time</h2>
+          <p className="text-gray-500 text-sm">Thank you for participating in Fotos Photofest!</p>
+        </motion.div>
+
+        <motion.div className="space-y-3" {...fadeUp(0.25)}>
+          <motion.div whileTap={{ scale: 0.98 }}>
+            <Button
+              fullWidth
+              onClick={() => window.open(CLAIM_URL, "_blank", "noopener,noreferrer")}
+              style={{
+                background: "linear-gradient(135deg, #fa4f00 0%, #ff6b2b 100%)",
+                boxShadow: "0 8px 24px rgba(250,79,0,0.28)",
+              }}
+            >
+              Sign Up for Free <ArrowRight size={15} weight="bold" />
+            </Button>
+          </motion.div>
+          <motion.div whileTap={{ scale: 0.98 }}>
+            <button
+              onClick={handleShare}
+              className="w-full flex items-center justify-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 border border-gray-200 rounded-xl py-2.5 transition-colors hover:border-gray-300 hover:bg-gray-50"
+            >
+              <ShareNetwork size={15} weight="bold" />
+              Share
+            </button>
+          </motion.div>
+        </motion.div>
+      </motion.div>
+    );
+  }
 
   return (
     <motion.div
@@ -83,15 +141,9 @@ export function RevealStep({ prize, name, onReset }: RevealStepProps) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] as const, delay: 0.2 }}
       >
-        <div
-          className="rounded-2xl overflow-hidden"
-          style={{
-            background: "linear-gradient(140deg, #ff6820 0%, #fa4f00 55%, #cc3d00 100%)",
-          }}
-        >
-          {/* ── Main face ── */}
+        <div className="rounded-2xl overflow-hidden" style={gradientStyle}>
+          {/* Main face */}
           <div style={{ padding: "28px 28px 22px" }}>
-            {/* Top row: logo + Gift Card label */}
             <div className="flex items-center justify-between mb-8">
               <Image
                 src="/logo.png"
@@ -107,35 +159,45 @@ export function RevealStep({ prize, name, onReset }: RevealStepProps) {
                 letterSpacing: "0.18em",
                 textTransform: "uppercase",
               }}>
-                Gift Card
+                {tier} Prize
               </p>
             </div>
 
-            {/* Prize value */}
-            <div className="mb-6">
+            <div className="mb-4">
               <p style={{
                 color: "#fff",
-                fontSize: 32,
+                fontSize: 28,
                 fontWeight: 800,
-                lineHeight: 1,
+                lineHeight: 1.1,
                 letterSpacing: "-0.01em",
               }}>
                 {label}
               </p>
             </div>
 
-            {/* Cardholder name */}
+            {eligibilityNote && (
+              <p style={{
+                color: "rgba(255,255,255,0.65)",
+                fontSize: 11,
+                fontWeight: 500,
+                lineHeight: 1.5,
+              }}>
+                {eligibilityNote}
+              </p>
+            )}
+
             <p style={{
-              color: "rgba(255,255,255,0.7)",
+              color: "rgba(255,255,255,0.5)",
               fontSize: 12,
               fontWeight: 500,
               letterSpacing: "0.04em",
+              marginTop: 12,
             }}>
               {name}
             </p>
           </div>
 
-          {/* ── Code strip ── */}
+          {/* Code strip */}
           <div style={{ background: "rgba(0,0,0,0.18)", padding: "16px 28px 20px" }}>
             <p style={{
               color: "rgba(255,255,255,0.5)",
@@ -155,16 +217,18 @@ export function RevealStep({ prize, name, onReset }: RevealStepProps) {
                 letterSpacing: "0.18em",
                 fontVariantNumeric: "tabular-nums",
               }}>
-                {couponCode}
+                {couponCode ?? "—"}
               </p>
-              <button
-                onClick={handleCopyCode}
-                className="flex items-center gap-1 text-xs font-semibold transition-colors shrink-0"
-                style={{ color: copied ? "rgba(134,239,172,1)" : "rgba(255,255,255,0.7)" }}
-              >
-                {copied ? <Check size={13} weight="bold" /> : <Copy size={13} weight="bold" />}
-                {copied ? "Copied" : "Copy"}
-              </button>
+              {couponCode && (
+                <button
+                  onClick={handleCopyCode}
+                  className="flex items-center gap-1 text-xs font-semibold transition-colors shrink-0"
+                  style={{ color: copied ? "rgba(134,239,172,1)" : "rgba(255,255,255,0.7)" }}
+                >
+                  {copied ? <Check size={13} weight="bold" /> : <Copy size={13} weight="bold" />}
+                  {copied ? "Copied" : "Copy"}
+                </button>
+              )}
             </div>
           </div>
         </div>

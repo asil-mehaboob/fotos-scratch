@@ -34,6 +34,8 @@ export default function Home() {
 
   // Prize
   const [prize, setPrize] = useState<Prize | null>(null);
+  const [couponCode, setCouponCode] = useState<string | null>(null);
+  const [eligibilityNote, setEligibilityNote] = useState<string | null>(null);
 
   // ── Helpers ────────────────────────────────────────────────
   const goTo = (next: Step) => {
@@ -82,6 +84,8 @@ export default function Home() {
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Invalid OTP."); return; }
       setPrize(getPrizeById(data.prizeId) ?? null);
+      setCouponCode(data.couponCode ?? null);
+      setEligibilityNote(data.eligibilityNote ?? null);
       goTo("success");
     } catch {
       setError("Network error. Please try again.");
@@ -120,6 +124,8 @@ export default function Home() {
     setOtpDigits(Array(6).fill(""));
     setIsAkpaMember(false);
     setPrize(null);
+    setCouponCode(null);
+    setEligibilityNote(null);
     setError("");
     goTo("form");
   };
@@ -208,6 +214,8 @@ export default function Home() {
               key={`reveal-${animKey}`}
               prize={prize}
               name={name}
+              couponCode={couponCode}
+              eligibilityNote={eligibilityNote}
               onReset={handleReset}
             />
           )}

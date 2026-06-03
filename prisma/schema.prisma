@@ -25,9 +25,28 @@ model ScratchEntry {
   prizeId    Int
   prizeLabel String
   createdAt  DateTime @default(now())
+  coupon     Coupon?
 
   @@index([phone])
   @@index([email])
+}
+
+model Coupon {
+  id              String        @id @default(cuid())
+  code            String        @unique
+  tier            CouponTier
+  phoneNumber     String
+  scratchEntryId  String?       @unique
+  claimed         Boolean       @default(false)
+  claimedAt       DateTime?
+  claimedByUserId String?
+  billingCycle    String?
+  createdAt       DateTime      @default(now())
+  expiresAt       DateTime?
+  scratchEntry    ScratchEntry? @relation(fields: [scratchEntryId], references: [id])
+
+  @@index([phoneNumber])
+  @@index([claimed])
 }
 
 model Account {
@@ -493,25 +512,26 @@ model PasswordResetToken {
 }
 
 model Photo {
-  id               String          @id
-  url              String
-  thumbnailUrl     String?
-  originalSize     BigInt          @default(0)
-  thumbnailSize    BigInt          @default(0)
-  originalFileName String?
-  eventId          String
-  faceVectors      Json?
-  createdAt        DateTime        @default(now())
-  faceVectors2     Json?
-  oldFaceVectors   Json?
-  previewUrl       String?
-  order            Int             @default(0)
-  previewSize      BigInt          @default(0)
-  ClientLike       ClientLike[]
-  DeliveryPhoto    DeliveryPhoto[]
-  GalleryPhoto     GalleryPhoto[]
-  Event            Event           @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  PhotoComment     PhotoComment[]
+  id                              String                            @id
+  url                             String
+  thumbnailUrl                    String?
+  originalSize                    BigInt                            @default(0)
+  thumbnailSize                   BigInt                            @default(0)
+  originalFileName                String?
+  eventId                         String
+  faceVectors                     Json?
+  createdAt                       DateTime                          @default(now())
+  faceVectors2                    Json?
+  oldFaceVectors                  Json?
+  previewUrl                      String?
+  order                           Int                               @default(0)
+  previewSize                     BigInt                            @default(0)
+  ClientLike                      ClientLike[]
+  DeliveryPhoto                   DeliveryPhoto[]
+  GalleryPhoto                    GalleryPhoto[]
+  Event                           Event                             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  PhotoComment                    PhotoComment[]
+  ProjectRegistrationMatchedPhoto ProjectRegistrationMatchedPhoto[]
 
   @@index([eventId])
 }
@@ -678,6 +698,10 @@ model Project {
   notifyOnClientOpen                  Boolean               @default(true)
   notifyOnSelectionComplete           Boolean               @default(true)
   aiDeliveryAllowGuestDownload        Boolean               @default(false)
+  gridSpacing                         String                @default("normal")
+  logoColor                           String                @default("white")
+  showLogoOnCover                     Boolean               @default(true)
+  showPortfolioWidget                 Boolean               @default(true)
   ClientLink                          ClientLink[]
   Event                               Event[]
   User                                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -774,6 +798,7 @@ model AlbumBook {
   allowDownload Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime
+  albumLayout   String?
   User          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([slug])
@@ -835,27 +860,47 @@ model ProjectQRCode {
 }
 
 model ProjectRegistration {
-  id              String    @id
-  projectId       String
-  name            String
-  email           String?
-  selfieUrl       String?
-  faceVector      Float[]
-  faceQuality     Float?
-  faceVector2     Float[]
-  faceQuality2    Float?
-  oldFaceVector   Float[]
-  oldFaceQuality  Float?
-  phoneE164       String?
-  whatsappOptInAt DateTime?
-  notifiedAt      DateTime?
-  createdAt       DateTime  @default(now())
-  consentAt       DateTime  @default(now())
-  registrantToken String    @unique
-  Project         Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id                              String                            @id
+  projectId                       String
+  name                            String
+  email                           String?
+  selfieUrl                       String?
+  faceVector                      Float[]
+  faceQuality                     Float?
+  faceVector2                     Float[]
+  faceQuality2                    Float?
+  oldFaceVector                   Float[]
+  oldFaceQuality                  Float?
+  phoneE164                       String?
+  whatsappOptInAt                 DateTime?
+  notifiedAt                      DateTime?
+  createdAt                       DateTime                          @default(now())
+  consentAt                       DateTime                          @default(now())
+  registrantToken                 String                            @unique
+  Project                         Project                           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  ProjectRegistrationMatchedPhoto ProjectRegistrationMatchedPhoto[]
 
   @@unique([projectId, email])
   @@index([projectId])
+}
+
+model ProjectRegistrationMatchedPhoto {
+  id                  String              @id
+  registrationId      String
+  photoId             String
+  Photo               Photo               @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  ProjectRegistration ProjectRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@unique([registrationId, photoId])
+  @@index([photoId])
+  @@index([registrationId])
+}
+
+enum CouponTier {
+  JACKPOT
+  GOLD
+  SILVER
+  BRONZE
 }
 
 enum DeliveryStatus {
