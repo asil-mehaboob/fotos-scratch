@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { pickPrizeConfig, type CouponTier } from "@/lib/prizes-config";
+import { sendCouponNotification } from "@/lib/wacrm";
 
 function generateCouponCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -85,6 +86,10 @@ export async function POST(request: NextRequest) {
           expiresAt,
         },
       });
+
+      // Notify the winner via WhatsApp — fire-and-forget so a wacrm
+      // failure never blocks the coupon response reaching the user.
+      void sendCouponNotification({ phone, name, prizeDetail: prize.label, couponCode });
     }
 
     return NextResponse.json({
