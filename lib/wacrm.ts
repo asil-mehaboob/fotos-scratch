@@ -22,6 +22,8 @@ export async function sendCouponNotification({
     return
   }
 
+  console.log('[wacrm] sending to', url, 'phone:', phone)
+
   const res = await fetch(url, {
     method: 'POST',
     headers: {
@@ -38,8 +40,10 @@ export async function sendCouponNotification({
     }),
   })
 
+  const text = await res.text().catch(() => '')
   if (!res.ok) {
-    const text = await res.text().catch(() => '')
     console.error(`[wacrm] webhook failed ${res.status}:`, text)
+  } else {
+    console.log(`[wacrm] webhook ok ${res.status}:`, text)
   }
 }
