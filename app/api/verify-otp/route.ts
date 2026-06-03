@@ -87,9 +87,11 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Notify the winner via WhatsApp — fire-and-forget so a wacrm
-      // failure never blocks the coupon response reaching the user.
-      void sendCouponNotification({ phone, name, prizeDetail: prize.label, couponCode });
+      try {
+        await sendCouponNotification({ phone, name, prizeDetail: prize.label, couponCode });
+      } catch (err) {
+        console.error('[wacrm] notification failed (non-blocking):', err);
+      }
     }
 
     return NextResponse.json({
