@@ -33,7 +33,7 @@ export const PRIZE_CONFIGS: PrizeConfig[] = [
   {
     id: 4,
     tier: "BRONZE",
-    label: "Prime at ₹589/month for 1 Year",
+    label: "Prime at ₹499/month",
     probability: 0.35,
     eligibilityNote: "Valid for Prime plan • Annual or half-yearly • ₹589/month locked for 12 months",
   },

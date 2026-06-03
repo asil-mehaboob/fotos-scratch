@@ -30,6 +30,13 @@ const TIER_COLORS: Record<string, { from: string; via: string; to: string }> = {
   BRONZE:  { from: "#ff6820", via: "#fa4f00", to: "#cc3d00" },
 };
 
+const TIER_DESCRIPTIONS: Record<string, string> = {
+  JACKPOT: "Valid on Prime or Focal. Enter at checkout on app.usefotos.com — no payment required.",
+  GOLD:    "Valid on Prime or Focal yearly plan. Enter at checkout on app.usefotos.com.",
+  SILVER:  "Valid on Prime or Focal. Enter at checkout on app.usefotos.com — yearly or half-yearly only.",
+  BRONZE:  "Valid on Prime plan. Enter at checkout on app.usefotos.com — yearly or half-yearly only.",
+};
+
 export function RevealStep({ prize, name, couponCode, eligibilityNote, onReset }: RevealStepProps) {
   const { label, tier } = prize;
   const [copied, setCopied] = useState(false);
@@ -159,7 +166,7 @@ export function RevealStep({ prize, name, couponCode, eligibilityNote, onReset }
                 letterSpacing: "0.18em",
                 textTransform: "uppercase",
               }}>
-                {tier} Prize
+                {tier}
               </p>
             </div>
 
@@ -174,17 +181,6 @@ export function RevealStep({ prize, name, couponCode, eligibilityNote, onReset }
                 {label}
               </p>
             </div>
-
-            {eligibilityNote && (
-              <p style={{
-                color: "rgba(255,255,255,0.65)",
-                fontSize: 11,
-                fontWeight: 500,
-                lineHeight: 1.5,
-              }}>
-                {eligibilityNote}
-              </p>
-            )}
 
             <p style={{
               color: "rgba(255,255,255,0.5)",
@@ -233,6 +229,14 @@ export function RevealStep({ prize, name, couponCode, eligibilityNote, onReset }
           </div>
         </div>
       </motion.div>
+
+      {/* Coupon usage description */}
+      {tier && TIER_DESCRIPTIONS[tier] && (
+        <motion.div className="mb-5 rounded-xl bg-gray-50 border border-gray-100 px-4 py-3 text-left" {...fadeUp(0.35)}>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-1">How to use</p>
+          <p className="text-xs text-gray-500 leading-relaxed">{TIER_DESCRIPTIONS[tier]}</p>
+        </motion.div>
+      )}
 
       {/* Actions */}
       <motion.div className="space-y-3" {...fadeUp(0.42)}>
