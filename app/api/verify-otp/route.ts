@@ -4,8 +4,8 @@ import { pickPrizeConfig, type CouponTier } from "@/lib/prizes-config";
 import { sendCouponNotification } from "@/lib/wacrm";
 
 function generateCouponCode(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  const seg = Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const seg = Array.from({ length: 8 }, () => alphabet[Math.floor(Math.random() * 32)]).join("");
   return `FOTO${seg}`;
 }
 
